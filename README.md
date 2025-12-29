@@ -4,20 +4,18 @@ This is a small React dashboard that lists users and lets you view details — s
 
 ## Features
 
-- Users dashboard
-  - Fetches users from `https://jsonplaceholder.typicode.com/users`
-  - Displays users in a responsive card grid
-  - Shows name, email, and a derived status (Active/Inactive)
+- Users list (responsive card layout)
+  - Name, email, status
+  - Loading state (skeleton cards)
+  - Empty state
+  - Error state + retry
 - User details modal
-  - Opens on click
-  - Shows name, email, phone, website, and company name
-- States handled
-  - Loading (skeleton cards)
-  - Empty state (no users)
-  - Error state (retry)
-- Bonus
-  - Search by name/email
-  - Subtle hover/transition effects
+  - Name, email, phone, website, company
+  - Loading + error state
+- Search by name/email
+- Pagination (6 items per page)
+- Add Mock User form (frontend-only)
+- Subtle hover/transition effects
 
 ## How to run
 
@@ -55,9 +53,9 @@ The JSONPlaceholder API doesn’t provide an explicit `status`, so status is **d
 The dashboard is implemented as a single page with a modal for details (keeps UX fast and simple).
 Network calls are cancellable via `AbortController` to avoid setting state on unmounted components.
 
-## What I’d Improve With More Time
+## What I’d Improve If I had more time
 
-- Add pagination and/or server-side search (for larger datasets)
-- Add more robust error messages (surface HTTP codes, provide “Try again later” copy)
-- Add basic tests (React Testing Library) for loading/error/empty states
-- Add routing (`/users/:id`) as an alternative to the modal
+- Add server-side pagination/search (for larger datasets)
+- Add route-based details (`/users/:id`) in addition to the modal
+- Add a small test suite for the state handling (loading/error/empty)
+- Persist mock users to localStorage so they survive page reload

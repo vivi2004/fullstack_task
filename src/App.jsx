@@ -7,11 +7,16 @@ import { SkeletonCards } from './components/SkeletonCards'
 import { StateMessage } from './components/StateMessage'
 import { UserCardGrid } from './components/UserCardGrid'
 import { UserDetailsModal } from './components/UserDetailsModal'
+import { AddUserForm } from './components/AddUserForm'
 
 function App() {
   const { users, isLoading, error, refetch } = useUsers()
   const [query, setQuery] = useState('')
   const [selectedUserId, setSelectedUserId] = useState(null)
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 6
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [mockUsers, setMockUsers] = useState([])
 
   const onSelectUser = useCallback((user) => {
     setSelectedUserId(user?.id ?? null)
@@ -21,25 +26,51 @@ function App() {
     setSelectedUserId(null)
   }, [])
 
+  const handleAddUser = useCallback((user) => {
+    setMockUsers((prev) => [...prev, user])
+    setShowAddForm(false)
+  }, [])
+
   const normalizedQuery = query.trim().toLowerCase()
 
   const filteredUsers = useMemo(() => {
-    if (!normalizedQuery) return users
-    return users.filter((u) => {
+    const all = [...users, ...mockUsers]
+    if (!normalizedQuery) return all
+    return all.filter((u) => {
       const haystack = `${u.name} ${u.email}`.toLowerCase()
       return haystack.includes(normalizedQuery)
     })
-  }, [normalizedQuery, users])
+  }, [normalizedQuery, users, mockUsers])
+
+  const paginatedUsers = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE
+    const end = start + PAGE_SIZE
+    return filteredUsers.slice(start, end)
+  }, [filteredUsers, page])
+
+  const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE)
+
+  const goToPage = useCallback((p) => {
+    if (p >= 1 && p <= totalPages) setPage(p)
+  }, [totalPages])
+
+  const prevPage = useCallback(() => goToPage(page - 1), [page, goToPage])
+  const nextPage = useCallback(() => goToPage(page + 1), [page, goToPage])
+
+  // Reset to page 1 when search changes
+  useMemo(() => {
+    setPage(1)
+  }, [normalizedQuery])
 
   const stats = useMemo(() => {
     let active = 0
     let inactive = 0
-    for (const u of users) {
+    for (const u of [...users, ...mockUsers]) {
       if (u.status === 'Active') active += 1
       else inactive += 1
     }
-    return { total: users.length, active, inactive }
-  }, [users])
+    return { total: users.length + mockUsers.length, active, inactive }
+  }, [users, mockUsers])
 
   return (
     <div className="app">
@@ -75,6 +106,9 @@ function App() {
         <Button variant="secondary" onClick={refetch} disabled={isLoading}>
           Refresh
         </Button>
+        <Button variant="secondary" onClick={() => setShowAddForm((v) => !v)}>
+          {showAddForm ? 'Cancel' : 'Add User'}
+        </Button>
       </section>
 
       <main className="content">
@@ -103,9 +137,25 @@ function App() {
         ) : null}
 
         {!isLoading && !error && filteredUsers.length > 0 ? (
-          <UserCardGrid users={filteredUsers} onSelectUser={onSelectUser} />
+          <UserCardGrid users={paginatedUsers} onSelectUser={onSelectUser} />
         ) : null}
       </main>
+
+      {showAddForm && <AddUserForm onAdd={handleAddUser} />}
+
+      {!isLoading && !error && filteredUsers.length > PAGE_SIZE && (
+        <div className="pagination">
+          <Button variant="secondary" size="sm" onClick={prevPage} disabled={page === 1}>
+            ←
+          </Button>
+          <span className="pagination__info">
+            Page {page} of {totalPages}
+          </span>
+          <Button variant="secondary" size="sm" onClick={nextPage} disabled={page === totalPages}>
+            →
+          </Button>
+        </div>
+      )}
 
       <UserDetailsModal userId={selectedUserId} isOpen={Boolean(selectedUserId)} onClose={onCloseDetails} />
     </div>
