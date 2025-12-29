@@ -1,4 +1,4 @@
-# Mini Client Dashboard (React)
+# Mini Client Dashboard.
 
 This is a small React dashboard that lists users and lets you view details — similar to what you’d see in a basic SaaS admin panel.
 
