@@ -14,10 +14,12 @@ function Row({ label, value }) {
   )
 }
 
-export function UserDetailsModal({ userId, isOpen, onClose }) {
-  const { user, isLoading, error } = useUser(userId, { enabled: isOpen })
+export function UserDetailsModal({ userId, isOpen, onClose, mockUsers = [] }) {
+  const mockUser = useMemo(() => mockUsers.find((u) => u.id === userId), [userId, mockUsers])
+  const { user, isLoading, error } = useUser(userId, { enabled: isOpen && !mockUser })
 
-  const status = useMemo(() => getUserStatus(user), [user])
+  const displayUser = mockUser || user
+  const status = useMemo(() => getUserStatus(displayUser), [displayUser])
 
   return (
     <Modal title="User" isOpen={isOpen} onClose={onClose}>
@@ -32,20 +34,20 @@ export function UserDetailsModal({ userId, isOpen, onClose }) {
         />
       ) : null}
 
-      {!isLoading && !error && user ? (
+      {!isLoading && !error && displayUser ? (
         <div className="details">
           <div className="details__title">
             <div>
-              <div className="details__name">{user.name}</div>
-              <div className="details__email">{user.email}</div>
+              <div className="details__name">{displayUser.name}</div>
+              <div className="details__email">{displayUser.email}</div>
             </div>
             <StatusBadge status={status} />
           </div>
 
           <div className="details__grid">
-            <Row label="Phone" value={user.phone} />
-            <Row label="Website" value={user.website} />
-            <Row label="Company" value={user.company?.name} />
+            <Row label="Phone" value={displayUser.phone} />
+            <Row label="Website" value={displayUser.website} />
+            <Row label="Company" value={displayUser.company?.name} />
           </div>
         </div>
       ) : null}

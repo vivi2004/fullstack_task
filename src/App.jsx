@@ -157,7 +157,7 @@ function App() {
         </div>
       )}
 
-      <UserDetailsModal userId={selectedUserId} isOpen={Boolean(selectedUserId)} onClose={onCloseDetails} />
+      <UserDetailsModal userId={selectedUserId} isOpen={Boolean(selectedUserId)} onClose={onCloseDetails} mockUsers={mockUsers} />
     </div>
   )
 }
